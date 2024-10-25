@@ -6,7 +6,6 @@ router.get("/zip/:username/:repo_name", async (req: Request, res: Response) => {
     try {
         const { authorization } = req.headers;
         const { username, repo_name } = req.params;
-        console.log(`authorization: ${authorization}`);
 
         const github_req = await axios.get(
             `https://api.github.com/repos/${username}/${repo_name}/zipball/`,
