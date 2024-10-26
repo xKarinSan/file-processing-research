@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import axios from "axios";
+// import axios from "axios";
 
 function App() {
     const [authToken, setAuthToken] = useState("");
@@ -12,33 +12,41 @@ function App() {
             alert("Please fill all of them.");
             return;
         }
-        const res = await axios.get(
+        await fetch(
             `http://localhost:3000/files/zip/${githubUsername}/${githubReponame}`,
             {
                 headers: {
                     authorization: `Bearer ${authToken}`,
                 },
-                responseType: "blob",
             }
-        );
-        // cget the reader
-        // const reader = res.data.pipeThrough(new TextDecoderStream()).getReader()
-        // while(true)
-        //   {
-        //     const {value,done} = await reader.read()
-        //     if (done){
-        //       break;
-        //     }
-        //   }
-
-        // Create a URL for the blob and trigger a download
-        const url = window.URL.createObjectURL(new Blob([res.data]));
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", `${githubReponame}.zip`); // Specify the file name
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+        )
+            .then(async (res) => {
+                if (!res.ok) {
+                    alert("Something went wrong!");
+                    return;
+                }
+                const reader = res.body?.getReader();
+                const dataArr: Uint8Array[] = [];
+                while (true) {
+                    if (reader) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        console.log(value);
+                        dataArr.push(value);
+                    }
+                }
+                const url = window.URL.createObjectURL(new Blob(dataArr));
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", `${githubReponame}.zip`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+            })
+            .catch((e) => {
+                alert("Something went wrong!");
+                return;
+            });
     };
     return (
         <>
