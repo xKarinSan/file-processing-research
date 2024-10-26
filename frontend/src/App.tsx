@@ -12,21 +12,33 @@ function App() {
             alert("Please fill all of them.");
             return;
         }
-        await axios
-            .get(
-                `http://localhost:3000/files/zip/${githubUsername}/${githubReponame}`,
-                {
-                    headers: {
-                        authorization: `Bearer ${authToken}`,
-                    },
-                }
-            )
-            .then((res) => {
-                return res.data;
-            })
-            .then((data) => {
-                console.log("data", data);
-            });
+        const res = await axios.get(
+            `http://localhost:3000/files/zip/${githubUsername}/${githubReponame}`,
+            {
+                headers: {
+                    authorization: `Bearer ${authToken}`,
+                },
+                responseType: "blob",
+            }
+        );
+        // cget the reader
+        // const reader = res.data.pipeThrough(new TextDecoderStream()).getReader()
+        // while(true)
+        //   {
+        //     const {value,done} = await reader.read()
+        //     if (done){
+        //       break;
+        //     }
+        //   }
+
+        // Create a URL for the blob and trigger a download
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `${githubReponame}.zip`); // Specify the file name
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     };
     return (
         <>
